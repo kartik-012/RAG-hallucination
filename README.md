@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # RAG Hallucination Auditor
 
 > A diagnostic tool that verifies AI-generated answers **sentence by sentence** against source documents — using a local NLI model, never asking the same LLM to judge itself.
@@ -211,3 +212,6 @@ Question
 ## Resume Bullet (fill in your actual numbers after running benchmark)
 
 > Built a RAG Hallucination Auditor achieving **__% precision / __% recall** on 35 annotated Q&A pairs; performs sentence-level NLI verification using a local cross-encoder model fully independent of the generation LLM.
+=======
+# RAG-hallucination
+>>>>>>> 818cb4d9904bdf493dee593e1e07926795bf226d
