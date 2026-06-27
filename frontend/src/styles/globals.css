@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --verdict-supported: #2d6a4f;
+  --verdict-unverifiable: #b8902f;
+  --verdict-contradicted: #9b2c2c;
+  --bg-base: #09090b;
+  --bg-surface: #18181b;
+  --border-subtle: #27272a;
+  --text-primary: #f4f4f5;
+  --text-muted: #71717a;
+  --accent-neutral: #3b82f6;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Outfit', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Claim chip animations */
+.claim-chip {
+  position: relative;
+  display: inline;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+}
+
+.claim-chip::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transition: height 200ms ease;
+}
+
+.claim-chip:hover::after {
+  height: 3px;
+}
+
+.claim-chip.active::after {
+  height: 3px;
+}
+
+/* Verdict underline colors */
+.claim-supported::after { background-color: #52b788; }
+.claim-unverifiable::after { background-color: #f4a42e; border-bottom: 2px dashed #f4a42e; background: none; height: 0; border-bottom-width: 2px; }
+.claim-contradicted::after { background-color: #ef4444; }
+
+/* Skeleton pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.skeleton-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Evidence thread animation */
+@keyframes thread-draw {
+  from { width: 0; opacity: 0; }
+  to { width: 100%; opacity: 1; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
