@@ -197,7 +197,7 @@ Question
   → Return full nested JSON to frontend
 ```
 
----
+
 
 ## Design Decisions
 
