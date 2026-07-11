@@ -3,7 +3,7 @@
 
 > A diagnostic tool that verifies AI-generated answers **sentence by sentence** against source documents — using a local NLI model, never asking the same LLM to judge itself.
 
----
+
 
 ## What It Does
 
