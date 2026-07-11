@@ -207,7 +207,7 @@ Question
 - **No auth** — single-operator demo tool, not multi-tenant SaaS.
 - **NLI over LLM** — the single most important decision: verification is independent of generation.
 
----
+
 
 ## Resume Bullet (fill in your actual numbers after running benchmark)
 
