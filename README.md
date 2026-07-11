@@ -28,7 +28,7 @@ Paste a question. The app:
 
 Run `▶ Run Full Benchmark` in the dashboard to get your actual numbers.
 
----
+
 
 ## Tech Stack
 
