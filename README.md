@@ -42,7 +42,7 @@ Run `▶ Run Full Benchmark` in the dashboard to get your actual numbers.
 | Generation | Google Gemini 1.5 Flash |
 | Database | SQLite (aiosqlite) |
 
----
+
 
 ## Setup
 
