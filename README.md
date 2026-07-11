@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # RAG Hallucination Auditor
 
 > A diagnostic tool that verifies AI-generated answers **sentence by sentence** against source documents — using a local NLI model, never asking the same LLM to judge itself.
@@ -16,7 +16,7 @@ Paste a question. The app:
 
 **Key architectural decision:** verification uses `cross-encoder/nli-deberta-v3-base` running locally — no LLM is ever asked to judge its own output.
 
----
+
 
 ## Benchmark Numbers
 
