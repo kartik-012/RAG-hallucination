@@ -157,7 +157,7 @@ rag-hallucination-auditor/
             └── SettingsPage.jsx  # Strictness slider
 ```
 
----
+
 
 ## API Endpoints
 
