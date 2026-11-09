@@ -47,25 +47,38 @@ async def run_pipeline(
         # Step 4: Verify each claim
         for idx, claim_text in enumerate(claims):
             claim_id = str(uuid.uuid4())
-            await execute_query(
-                "INSERT OR IGNORE INTO claims(id, generation_id, claim_text, sentence_index, created_at) VALUES(?,?,?,?,?)",
-                (claim_id, gen_id, claim_text, idx, now),
-            )
+            try:
+                await execute_query(
+                    "INSERT OR IGNORE INTO claims(id, generation_id, claim_text, sentence_index, created_at) VALUES(?,?,?,?,?)",
+                    (claim_id, gen_id, claim_text, idx, now),
+                )
 
-            result = verify_claim(claim_text, chunks, strictness_threshold)
+                result = verify_claim(claim_text, chunks, strictness_threshold)
 
-            verif_id = str(uuid.uuid4())
-            await execute_query(
-                "INSERT INTO verifications(id, claim_id, verdict, confidence_score, matched_chunk_id, reasoning_text, created_at) VALUES(?,?,?,?,?,?,?)",
-                (
-                    verif_id, claim_id,
-                    result["verdict"],
-                    result["confidence_score"],
-                    result["matched_chunk_id"],
-                    result["reasoning_text"],
-                    now,
-                ),
-            )
+                verif_id = str(uuid.uuid4())
+                await execute_query(
+                    "INSERT INTO verifications(id, claim_id, verdict, confidence_score, matched_chunk_id, reasoning_text, created_at) VALUES(?,?,?,?,?,?,?)",
+                    (
+                        verif_id, claim_id,
+                        result["verdict"],
+                        result["confidence_score"],
+                        result["matched_chunk_id"],
+                        result["reasoning_text"],
+                        now,
+                    ),
+                )
+            except Exception as claim_err:
+                # Log individual claim errors but don't fail the whole pipeline
+                print(f"Warning: failed to verify claim {idx}: {claim_err}")
+                # Insert unverifiable result so UI still shows something
+                verif_id = str(uuid.uuid4())
+                try:
+                    await execute_query(
+                        "INSERT INTO verifications(id, claim_id, verdict, confidence_score, matched_chunk_id, reasoning_text, created_at) VALUES(?,?,?,?,?,?,?)",
+                        (verif_id, claim_id, "unverifiable", 0.0, None, f"Verification error: {str(claim_err)}", now),
+                    )
+                except Exception:
+                    pass
 
         # Mark complete
         await execute_query(
@@ -74,9 +87,10 @@ async def run_pipeline(
         )
 
     except Exception as e:
+        err_msg = str(e)[:500]  # Truncate long error messages
         await execute_query(
             "UPDATE generations SET status=?, error_message=? WHERE id=?",
-            ("error", str(e), gen_id),
+            ("error", err_msg, gen_id),
         )
         raise
 
