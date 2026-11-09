@@ -7,10 +7,12 @@ export function ClaimChip({ claim, isActive, onClick }) {
   const cfg = getVerdictConfig(verdict)
   const confidence = pct(claim.verification?.confidence_score)
 
+  const isBullet = /^[\-*•]\s|^\d+\.\s/.test(claim.claim_text.trim())
+
   return (
     <span
-      className="relative cursor-pointer"
-      style={{ display: 'inline' }}
+      className={`relative cursor-pointer ${isBullet ? 'block mt-3 mb-1 ml-6' : 'inline'}`}
+      style={{ display: isBullet ? 'block' : 'inline' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onClick(claim)}
@@ -29,7 +31,7 @@ export function ClaimChip({ claim, isActive, onClick }) {
           textDecorationStyle: verdict === 'unverifiable' ? 'dashed' : 'solid',
         }}
       >
-        {claim.claim_text}
+        {isBullet ? claim.claim_text.trim() : claim.claim_text}
       </span>
 
       {/* Confidence badge on hover */}
