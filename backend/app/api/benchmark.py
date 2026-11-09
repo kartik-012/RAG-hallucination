@@ -8,30 +8,25 @@ _running = False
 
 
 @router.post("/run")
-async def run_benchmark_endpoint(background_tasks: BackgroundTasks):
+async def run_benchmark_endpoint():
     global _running
     if _running:
-        raise HTTPException(status_code=409, detail="Benchmark already running")
+        raise HTTPException(status_code=409, detail="Benchmark already running. Please wait for it to complete.")
     _running = True
 
-    async def do_run():
-        global _running
-        try:
-            await seed_benchmark()
-            batch_id = await run_benchmark()
-            return batch_id
-        finally:
-            _running = False
-
-    # Run synchronously for simplicity (returns when done)
     try:
-        await seed_benchmark()
+        # seed_benchmark is called inside run_benchmark, no need to call twice
         batch_id = await run_benchmark()
         _running = False
         return {"run_batch_id": batch_id, "status": "complete"}
     except Exception as e:
         _running = False
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/status")
+async def benchmark_status():
+    return {"running": _running}
 
 
 @router.get("/results")

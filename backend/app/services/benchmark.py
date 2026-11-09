@@ -16,7 +16,7 @@ BENCHMARK_ITEMS = [
     # Category: RAG Systems
     {"question": "What is a vector database?", "expected": "A vector database stores embeddings and enables similarity search.", "hallucinated": False, "category": "RAG Systems"},
     {"question": "What is semantic similarity?", "expected": "Semantic similarity measures how close two pieces of text are in meaning.", "hallucinated": False, "category": "RAG Systems"},
-    {"question": "What is document chunking?", "expected": "Chunking splits documents into smaller pieces for efficient retrieval.", "halluzinated": False, "category": "RAG Systems"},
+    {"question": "What is document chunking?", "expected": "Chunking splits documents into smaller pieces for efficient retrieval.", "hallucinated": False, "category": "RAG Systems"},
     {"question": "What is NLI in natural language processing?", "expected": "NLI (Natural Language Inference) determines if a hypothesis is entailed, contradicted, or neutral given a premise.", "hallucinated": False, "category": "RAG Systems"},
     {"question": "What is a cross-encoder model?", "expected": "A cross-encoder jointly encodes two texts and scores their relationship, unlike bi-encoders.", "hallucinated": False, "category": "RAG Systems"},
 
@@ -83,7 +83,7 @@ async def run_benchmark(strictness: float = 0.7) -> str:
             (query_id, item["question_text"], strictness, now),
         )
 
-        gen_id = await run_pipeline(query_id, item["question_text"], strictness, "gemini-1.5-flash")
+        gen_id = await run_pipeline(query_id, item["question_text"], strictness, "gemini-2.5-flash")  # Use a supported model for benchmarks
 
         # Check if detector is correct
         gen = await fetch_one("SELECT * FROM generations WHERE id=?", (gen_id,))
