@@ -50,9 +50,10 @@ class DocumentChunkOut(BaseModel):
 # ── Queries ───────────────────────────────────────────────────────────────────
 
 class QueryCreate(BaseModel):
+    model_config = {'protected_namespaces': ()}
     question_text: str = Field(..., max_length=500)
     strictness_threshold: float = Field(0.7, ge=0.0, le=1.0)
-    model_name: str = "gemini-1.5-flash"
+    model_name: str = "gemini-2.5-flash"
 
 
 # ── Verifications ─────────────────────────────────────────────────────────────
