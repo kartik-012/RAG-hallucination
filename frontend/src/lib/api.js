@@ -24,6 +24,7 @@ export const api = {
 
   // Benchmark
   runBenchmark: () => req('POST', '/benchmark/run'),
+  getBenchmarkStatus: () => req('GET', '/benchmark/status'),
   getBenchmarkResults: () => req('GET', '/benchmark/results'),
   getBenchmarkBatch: (id) => req('GET', `/benchmark/results/${id}`),
 
