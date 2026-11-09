@@ -14,10 +14,36 @@ def get_model():
 
 TRUST_WEIGHT_MAP = {"high": 1.2, "medium": 1.0, "low": 0.8}
 
+# Label order for cross-encoder/nli-deberta-v3-base:
+# After apply_softmax=True, scores correspond to model's label ids.
+# The deberta-v3-base NLI model labels: 0=contradiction, 1=entailment, 2=neutral
+# However, the actual label mapping depends on model config — we read it dynamically.
+# To be safe, we use the model's label2id mapping.
+DEBERTA_LABEL_MAP = {
+    "contradiction": 0,
+    "entailment": 1,
+    "neutral": 2,
+}
+
+
+def get_label_indices(model):
+    """Get the correct indices for contradiction, entailment, neutral from model config."""
+    try:
+        label2id = model.model.config.label2id
+        # Normalize keys to lowercase
+        label2id = {k.lower(): v for k, v in label2id.items()}
+        contra_idx = label2id.get("contradiction", 0)
+        entail_idx = label2id.get("entailment", 1)
+        neutral_idx = label2id.get("neutral", 2)
+        return contra_idx, entail_idx, neutral_idx
+    except Exception:
+        # Fallback: use known deberta-v3-base ordering
+        return 0, 1, 2
+
 
 def verify_claim(
     claim: str,
-    candidate_chunks: list[dict],
+    candidate_chunks: list,
     strictness_threshold: float = 0.7,
 ) -> dict:
     """
@@ -34,16 +60,16 @@ def verify_claim(
             "reasoning_text": "No source documents were retrieved for this claim.",
         }
 
+    contra_idx, entail_idx, neutral_idx = get_label_indices(model)
+
     # Build premise-hypothesis pairs: (chunk_text, claim)
     pairs = [(chunk["chunk_text"], claim) for chunk in candidate_chunks]
 
-    # Cross-encoder scores: [contradiction, entailment, neutral] logits
-    # deberta-v3-base outputs: [contradiction, entailment, neutral]
+    # Cross-encoder scores with softmax applied
     scores_raw = model.predict(pairs, apply_softmax=True)
 
     best_score = -1
     best_chunk = None
-    best_verdict = "unverifiable"
     best_entail = 0.0
     best_contra = 0.0
 
@@ -51,10 +77,9 @@ def verify_claim(
         chunk = candidate_chunks[i]
         trust_mult = TRUST_WEIGHT_MAP.get(chunk.get("trust_weight", "medium"), 1.0)
 
-        # score_vec = [contradiction_prob, entailment_prob, neutral_prob]
-        contra_prob = float(score_vec[0]) * trust_mult
-        entail_prob = float(score_vec[1]) * trust_mult
-        neutral_prob = float(score_vec[2])
+        # Extract probabilities using correct label indices
+        contra_prob = float(score_vec[contra_idx]) * trust_mult
+        entail_prob = float(score_vec[entail_idx]) * trust_mult
 
         # Pick the dominant signal for this chunk
         dominant = max(entail_prob, contra_prob)
@@ -62,8 +87,8 @@ def verify_claim(
         if dominant > best_score:
             best_score = dominant
             best_chunk = chunk
-            best_entail = float(score_vec[1])
-            best_contra = float(score_vec[0])
+            best_entail = float(score_vec[entail_idx])
+            best_contra = float(score_vec[contra_idx])
 
     if best_chunk is None:
         return {
@@ -74,18 +99,19 @@ def verify_claim(
         }
 
     # Determine verdict based on strictness threshold
+    chunk_preview = best_chunk['chunk_text'][:120]
     if best_entail >= strictness_threshold:
         verdict = "supported"
         confidence = min(best_entail, 1.0)
-        reasoning = f"Claim is directly supported by: \"{best_chunk['chunk_text'][:120]}...\""
+        reasoning = f"Claim is directly supported by: \"{chunk_preview}...\""
     elif best_contra >= strictness_threshold:
         verdict = "contradicted"
         confidence = min(best_contra, 1.0)
-        reasoning = f"Claim contradicts the source: \"{best_chunk['chunk_text'][:120]}...\""
+        reasoning = f"Claim contradicts the source: \"{chunk_preview}...\""
     else:
         verdict = "unverifiable"
         confidence = max(best_entail, best_contra)
-        reasoning = f"No strong match found. Best candidate: \"{best_chunk['chunk_text'][:120]}...\""
+        reasoning = f"No strong match found. Best candidate: \"{chunk_preview}...\""
 
     return {
         "verdict": verdict,
